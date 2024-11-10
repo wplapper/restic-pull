@@ -1,0 +1,17 @@
+Enhancement request:  Structured dump of metadata / index #4341
+
+The codebase for the enhancement request comes in two flavours:
+. normal output in JSON format.
+. as a loaded SQLite database
+
+The amount of JSON output can be selected the list of options
+ --snapshot,      -S: show selected snapshots
+ --index,         -I: show all index data and containing packfile
+ --file,          -F: show file meta data via chosen snapshots
+ --parent-child,  -P: show parent to child relationship via chosen snapshots
+ --datablob,      -D: show datablob details (snapId, metablob, position in file table, offset in contents list)
+ --packfiles      -Y  show packfile summary
+ --snap-meta      -T  show all metablobs belonging to a given snapshot
+ --all,           -A: activate all of the above flags (snapshot,index,file,datablob,parent-child,packfiles)
+
+https://github.com/restic/restic/issues/4341
