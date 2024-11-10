@@ -44,7 +44,7 @@ type MetaPrintOpts struct {
 	IndexData   bool
 	FileData    bool
 	ParentChild bool
-	FlatTopo    bool
+	SnapMeta    bool
 	DataBlobs   bool
 	Packfiles   bool
 	Sql         string
@@ -55,7 +55,7 @@ type metaPrintTables struct {
 	IndexData           bool
 	FileData            bool
 	ParentChild         bool
-	FlatTopo            bool
+	SnapMeta            bool
 	DataBlobs           bool
 	Packfiles           bool
 	Sql                 string
@@ -104,7 +104,7 @@ func New(mpo MetaPrintOpts) *metaPrintTables {
 		IndexData:   mpo.IndexData,
 		FileData:    mpo.FileData,
 		ParentChild: mpo.ParentChild,
-		FlatTopo:    mpo.FlatTopo,
+		SnapMeta:    mpo.SnapMeta,
 		DataBlobs:   mpo.DataBlobs,
 		Packfiles:   mpo.Packfiles,
 		Sql:         mpo.Sql,

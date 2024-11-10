@@ -162,7 +162,7 @@ var CreateTablesSlice = []string{
     --CONSTRAINT ux_cont_idblof           UNIQUE(blob__id, position, offset)
 )`,
 
-	// tables WOTHOUT ROWID, becuase of composite PRIMARY KEYs
+	// tables WITHOUT ROWID, because of composite PRIMARY KEYs
 	`CREATE TABLE snapshot_paths (
     id INTEGER NOT NULL,                -- primary key par, same as snapshots.id
     path_index INTEGER NOT NULL,        -- index into path slice

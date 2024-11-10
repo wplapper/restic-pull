@@ -114,6 +114,15 @@ Format of selected output:
       "num-entries": <num-entries 1>
     }, ... ]
 
+  snap-meta: "snap_meta": [
+    {
+      "snapid": "<snapid 1>",
+      "numblobs": <n 1>,
+      "blobids": [
+        "<blob 1>",
+      ]
+		}, ... ]
+
 
 EXIT STATUS
 ===========
@@ -148,7 +157,7 @@ func init() {
 	f.BoolVarP(&metaDataOptions.IndexData, "index", "I", false, "produce index metadata")
 	f.BoolVarP(&metaDataOptions.FileData, "file", "F", false, "produce file metadata")
 	f.BoolVarP(&metaDataOptions.ParentChild, "parent-child", "P", false, "produce parent to child relationship table (global)")
-	f.BoolVarP(&metaDataOptions.FlatTopo, "snap-meta", "T", false, "snapid to metablob table")
+	f.BoolVarP(&metaDataOptions.SnapMeta, "snap-meta", "T", false, "snapid to metablob table")
 	f.BoolVarP(&metaDataOptions.DataBlobs, "data-blob", "D", false, "produce data blob details")
 	f.BoolVarP(&metaDataOptions.Packfiles, "packfiles", "Y", false, "produce packfile summary")
 	f.BoolVarP(&metaDataOptions.AllData, "all", "A", false, "produce all metadata")
@@ -164,7 +173,6 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 	forcedIndex := false
 	startTime := time.Now()
 
-	// open
 	ctx, repo, unlock, err := openWithReadLock(ctx, gopts, false)
 	if err != nil {
 		return err
@@ -177,7 +185,6 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 		Warnf("%8.1f %s\n", time.Since(startTime).Seconds(), "repository open")
 	}
 
-	// load master index - implicitly needed everywhere
 	err = repo.LoadIndex(ctx, nil)
 	if err != nil {
 		return err
@@ -190,7 +197,7 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 	if opts.IndexData || opts.Packfiles {
 		forcedIndex = true
 	}
-	if opts.ParentChild || opts.FlatTopo || opts.DataBlobs || opts.FileData {
+	if opts.ParentChild || opts.SnapMeta || opts.DataBlobs || opts.FileData {
 		forcedFileData = true
 	}
 
@@ -199,7 +206,7 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 		opts.IndexData = true
 		opts.FileData = true
 		opts.ParentChild = true
-		opts.FlatTopo = true
+		opts.SnapMeta = true
 		opts.DataBlobs = true
 		opts.Packfiles = true
 
@@ -228,7 +235,6 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 			}
 		}
 
-		// master index
 		if forcedIndex {
 			err = mpt.PrintIndexMeta(ctx, repo)
 			if err != nil {
@@ -236,7 +242,6 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 			}
 		}
 
-		// file meta data
 		if forcedFileData {
 			err = mpt.PrintFileMeta(ctx, repo, snapshots)
 			if err != nil {
@@ -248,28 +253,21 @@ func runMetaData(ctx context.Context, opts MetaDataOptions, gopts GlobalOptions,
 			mpt.PrintCompositeKeyDataTable()
 		}
 
-		// child parent relationships
 		if opts.ParentChild {
 			mpt.PrintParentChild()
 		}
 
-		// topology - flattened metablob tree
-		if opts.FlatTopo {
+		if opts.SnapMeta {
 			mpt.PrintTopology(snapshots)
 		}
 
 		if opts.Packfiles {
 			mpt.PrintPackfilesSummary()
 		}
-		// finale
+
 		Printf("}\n")
 	} else {
-		err := metaprint.RunDatabaseCreation(ctx, repo, opts.Sql, gopts.Verbose, startTime)
-		return err
-	}
-
-	if gopts.Verbose > 0 {
-		Warnf("command used %.1f seconds\n", time.Since(startTime).Seconds())
+		return metaprint.RunDatabaseCreation(ctx, repo, opts.Sql, gopts.Verbose, startTime)
 	}
 
 	return nil
