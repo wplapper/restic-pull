@@ -2,15 +2,15 @@ package main
 
 import (
 	"cmp"
- 	"context"
- 	"encoding/json"
- 	"fmt"
- 	"io"
- 	"os"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"slices"
- 	"strings"
- 	"time"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
