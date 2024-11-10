@@ -83,8 +83,9 @@ func (sma snapshotMetadataArgs) convert() (*snapshotMetadata, error) {
 
 // RewriteOptions collects all options for the rewrite command.
 type RewriteOptions struct {
-	Forget bool
-	DryRun bool
+	Forget          bool
+	DryRun          bool
+	SnapshotSummary bool
 
 	Metadata snapshotMetadataArgs
 	restic.SnapshotFilter
@@ -101,6 +102,7 @@ func init() {
 	f.BoolVarP(&rewriteOptions.DryRun, "dry-run", "n", false, "do not do anything, just print what would be done")
 	f.StringVar(&rewriteOptions.Metadata.Hostname, "new-host", "", "replace hostname")
 	f.StringVar(&rewriteOptions.Metadata.Time, "new-time", "", "replace time of the backup")
+	f.BoolVarP(&rewriteOptions.SnapshotSummary, "snapshot-summary", "s", false, "create snapshot summary record if it does not exist")
 
 	initMultiSnapshotFilter(f, &rewriteOptions.SnapshotFilter, true)
 	rewriteOptions.ExcludePatternOptions.Add(f)
@@ -245,6 +247,13 @@ func filterAndReplaceSnapshot(ctx context.Context, repo restic.Repository, sn *r
 		sn.Hostname = newMetadata.Hostname
 	}
 
+	// create Snapshot.Summary
+	ss := &restic.SnapshotSummary{}
+	err = BuildSnapSummary(ctx, repo.(*repository.Repository), sn, &filteredTree, ss)
+	if err != nil {
+		return false, err
+	}
+
 	// Save the new snapshot.
 	id, err := restic.SaveSnapshot(ctx, repo, sn)
 	if err != nil {
@@ -257,13 +266,12 @@ func filterAndReplaceSnapshot(ctx context.Context, repo restic.Repository, sn *r
 			return false, err
 		}
 		debug.Log("removed old snapshot %v", sn.ID())
-		Verbosef("removed old snapshot %v\n", sn.ID().Str())
 	}
 	return true, nil
 }
 
 func runRewrite(ctx context.Context, opts RewriteOptions, gopts GlobalOptions, args []string) error {
-	if opts.ExcludePatternOptions.Empty() && opts.Metadata.empty() {
+	if !opts.SnapshotSummary && opts.ExcludePatternOptions.Empty() && opts.Metadata.empty() {
 		return errors.Fatal("Nothing to do: no excludes provided and no new metadata provided")
 	}
 
@@ -292,6 +300,10 @@ func runRewrite(ctx context.Context, opts RewriteOptions, gopts GlobalOptions, a
 	bar := newIndexProgress(gopts.Quiet, gopts.JSON)
 	if err = repo.LoadIndex(ctx, bar); err != nil {
 		return err
+	}
+
+	if opts.SnapshotSummary {
+		return rewriteSnapshotSummary(ctx, repo, gopts, snapshotLister, &opts.SnapshotFilter, args, opts)
 	}
 
 	changedCount := 0
