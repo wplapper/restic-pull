@@ -1,0 +1,10 @@
+Enhancement: create snapshot summary statistics for snapshots which don't have them
+
+When restic rewrite is used with the -s (snapshot-summary) option,
+a new snapshot is created containing statistics summary data. Only two fields
+will be non-zero: TotalFilesProcessed and TotalBytesProcessed
+
+When restic rewrite is used to remove certain parts of the snapshot, the new feature
+will alse be activated.
+
+https://github.com/restic/restic/issues/4942
