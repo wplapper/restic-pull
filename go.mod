@@ -32,7 +32,7 @@ require (
 	golang.org/x/sys v0.26.0
 	golang.org/x/term v0.25.0
 	golang.org/x/text v0.19.0
-	golang.org/x/time v0.7.0
+	golang.org/x/time v0.8.0
 	google.golang.org/api v0.204.0
 )
 
